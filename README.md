@@ -1,8 +1,8 @@
-<p align="center">
-  <img src="./logo.svg" width="350" alt="RSVP Speed Read Logo">
-</p>
-
 # RSVP Speed Read
+
+<p align="center">
+  <img src="./hero.png" width="100%" alt="RSVP Speed Read Hero Banner" style="border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+</p>
 
 ### Turbocharge Your Focus. Read Faster. Retain More.
 
@@ -35,4 +35,6 @@ RSVP Speed Read is a high-performance web application designed for professionals
 - **Website:** [rsvpspeedread.com](https://rsvpspeedread.com)
 
 ---
-*Created with focus and precision.*
+<p align="center">
+  <i>Master your documents. Master your time.</i>
+</p>

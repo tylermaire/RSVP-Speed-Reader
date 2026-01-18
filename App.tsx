@@ -7,20 +7,25 @@ import { analyzeDocumentStructure, extractSegmentText, generateQuiz } from './se
 import ReaderDisplay from './components/ReaderDisplay';
 
 const Logo: React.FC<{ className?: string }> = ({ className }) => (
-  <svg viewBox="0 0 200 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 240 80" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3b82f6" />
-        <stop offset="50%" stopColor="#8b5cf6" />
-        <stop offset="100%" stopColor="#ec4899" />
+      <linearGradient id="feather-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#6366f1" />
+        <stop offset="100%" stopColor="#a855f7" />
       </linearGradient>
+      <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="2" result="blur" />
+        <feComposite in="SourceGraphic" in2="blur" operator="over" />
+      </filter>
     </defs>
-    <rect x="10" y="38" width="25" height="3.5" rx="1.75" fill="url(#logo-gradient)" opacity="0.6" />
-    <rect x="25" y="46" width="20" height="3.5" rx="1.75" fill="url(#logo-gradient)" opacity="0.8" />
-    <rect x="20" y="54" width="28" height="3.5" rx="1.75" fill="url(#logo-gradient)" />
-    <path d="M55 25L105 45L55 65L68 45L55 25Z" fill="url(#logo-gradient)" />
-    <path d="M62 18L115 45L62 72L78 45L62 18Z" fill="url(#logo-gradient)" opacity="0.8" />
-    <path d="M72 10L125 45L72 80L90 45L72 10Z" fill="url(#logo-gradient)" opacity="0.6" />
+    {/* Speed Lines */}
+    <rect x="10" y="35" width="15" height="3" rx="1.5" fill="#6366f1" opacity="0.6" />
+    <rect x="5" y="44" width="22" height="3" rx="1.5" fill="#8b5cf6" opacity="0.8" />
+    
+    {/* Feathered Arrow Layers */}
+    <path d="M45 20 L75 45 L45 70 L55 45 Z" fill="url(#feather-grad)" opacity="0.4" />
+    <path d="M55 15 L90 45 L55 75 L68 45 Z" fill="url(#feather-grad)" opacity="0.7" />
+    <path d="M70 10 L110 45 L70 80 L85 45 Z" fill="url(#feather-grad)" filter="url(#glow)" />
   </svg>
 );
 
@@ -242,8 +247,8 @@ const App: React.FC = () => {
         {/* Header - Hides in Zen Mode */}
         <header className={`w-full mb-10 flex items-center justify-between transition-all duration-500 ${isZenMode ? 'opacity-0 -translate-y-10 pointer-events-none absolute' : 'opacity-100 translate-y-0'}`}>
           <div className="flex items-center gap-1 group">
-            <Logo className="h-14 w-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" />
-            <div className="flex flex-col ml-1">
+            <Logo className="h-16 w-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" />
+            <div className="flex flex-col ml-[-15px]">
               <h1 className="text-3xl font-black tracking-tight text-white leading-none">RSVP</h1>
               <p className="text-sm text-slate-400 font-light italic tracking-[0.15em] mt-1.5 pl-0.5">Speed Read</p>
             </div>

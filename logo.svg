@@ -1,15 +1,16 @@
-<svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 240 80" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3b82f6" />
-        <stop offset="50%" stopColor="#8b5cf6" />
-        <stop offset="100%" stopColor="#ec4899" />
+      <linearGradient id="feather-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#6366f1" />
+        <stop offset="100%" stopColor="#a855f7" />
       </linearGradient>
     </defs>
-    <rect x="10" y="38" width="25" height="3.5" rx="1.75" fill="url(#logo-gradient)" opacity="0.6" />
-    <rect x="25" y="46" width="20" height="3.5" rx="1.75" fill="url(#logo-gradient)" opacity="0.8" />
-    <rect x="20" y="54" width="28" height="3.5" rx="1.75" fill="url(#logo-gradient)" />
-    <path d="M55 25L105 45L55 65L68 45L55 25Z" fill="url(#logo-gradient)" />
-    <path d="M62 18L115 45L62 72L78 45L62 18Z" fill="url(#logo-gradient)" opacity="0.8" />
-    <path d="M72 10L125 45L72 80L90 45L72 10Z" fill="url(#logo-gradient)" opacity="0.6" />
+    {/* Speed Lines */}
+    <rect x="10" y="35" width="15" height="3" rx="1.5" fill="#6366f1" opacity="0.6" />
+    <rect x="5" y="44" width="22" height="3" rx="1.5" fill="#8b5cf6" opacity="0.8" />
+    
+    {/* Feathered Arrow Layers */}
+    <path d="M45 20 L75 45 L45 70 L55 45 Z" fill="url(#feather-grad)" opacity="0.4" />
+    <path d="M55 15 L90 45 L55 75 L68 45 Z" fill="url(#feather-grad)" opacity="0.7" />
+    <path d="M70 10 L110 45 L70 80 L85 45 Z" fill="url(#feather-grad)" />
 </svg>
