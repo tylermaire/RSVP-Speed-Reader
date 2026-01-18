@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Token, Theme } from '../types';
 
@@ -17,8 +16,16 @@ const ReaderDisplay: React.FC<ReaderDisplayProps> = ({ token, fontSize, theme })
 
   if (!token) {
     return (
-      <div className={`flex items-center justify-center h-64 border-y-2 ${themeColors.border} ${themeColors.bg} rounded-xl shadow-inner`}>
-        <span className="text-slate-500 italic font-medium">Upload a document to begin</span>
+      <div className={`flex flex-col items-center justify-center h-48 sm:h-64 border-y-2 ${themeColors.border} ${themeColors.bg} rounded-xl shadow-inner relative overflow-hidden`}>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/5 to-transparent pointer-events-none"></div>
+        <div className="flex flex-col items-center gap-3 opacity-30">
+          <div className="flex gap-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="w-1.5 h-1.5 rounded-full bg-slate-500"></div>
+            ))}
+          </div>
+          <span className="text-[10px] text-slate-500 font-black uppercase tracking-[0.5em]">System Idle</span>
+        </div>
       </div>
     );
   }
@@ -31,12 +38,12 @@ const ReaderDisplay: React.FC<ReaderDisplayProps> = ({ token, fontSize, theme })
   const suffix = word.substring(focusIdx + 1);
 
   return (
-    <div className={`relative flex flex-col items-center justify-center h-64 border-y-2 ${themeColors.border} ${themeColors.bg} overflow-hidden select-none transition-colors duration-500 rounded-xl shadow-2xl`}>
+    <div className={`relative flex flex-col items-center justify-center h-48 sm:h-64 border-y-2 ${themeColors.border} ${themeColors.bg} overflow-hidden select-none transition-colors duration-500 rounded-xl shadow-2xl`}>
       {/* Centering Crosshair Guides */}
       <div className={`absolute top-0 bottom-0 left-1/2 w-px ${themeColors.guide} pointer-events-none z-0`}></div>
       <div className={`absolute top-1/2 left-0 right-0 h-px ${themeColors.guide} pointer-events-none z-0`}></div>
       
-      {/* RSVP Word Container using CSS Grid for perfect non-overlapping alignment */}
+      {/* RSVP Word Container */}
       <div 
         className={`mono font-bold grid grid-cols-[1fr_auto_1fr] w-full px-4 items-baseline transition-all duration-75 z-10 ${token.isQuote ? 'italic text-amber-400' : themeColors.text}`}
         style={{ fontSize: `${fontSize}px`, lineHeight: 1 }}
@@ -45,7 +52,6 @@ const ReaderDisplay: React.FC<ReaderDisplayProps> = ({ token, fontSize, theme })
           {prefix}
         </div>
         <div className="relative flex items-center justify-center">
-          {/* Subtle focus highlight circle aligned with branding */}
           <div className={`absolute inset-0 scale-150 rounded-full opacity-10 ${themeColors.glow}`}></div>
           <span className={`${themeColors.focus} relative z-10 drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]`}>
             {focusLetter}

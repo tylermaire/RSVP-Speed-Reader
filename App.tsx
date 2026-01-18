@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Play, Pause, RotateCcw, Upload, Sliders, BrainCircuit, FileText, Bookmark as BookmarkIcon, Trash2, History, CheckCircle2, XCircle, RefreshCw, Palette, Quote, Copy, Check, AlertCircle, Layers, ChevronRight, Maximize2, Minimize2, Settings2, Mail, User, Github } from 'lucide-react';
 import { Token, Quiz, Bookmark, Theme, Citation, DocumentPart } from './types';
@@ -178,7 +177,6 @@ const App: React.FC = () => {
   const handleSaveBookmark = () => {
     if (!text || tokens.length === 0) return;
     const percentage = Math.round((currentIndex / (tokens.length - 1)) * 100);
-    // Fix: Corrected variable declaration from 'new Bookmark' to 'newBookmark'
     const newBookmark: Bookmark = {
       id: crypto.randomUUID(),
       index: currentIndex,
@@ -244,26 +242,20 @@ const App: React.FC = () => {
   const progress = tokens.length > 0 ? (currentIndex / (tokens.length - 1)) * 100 : 0;
   
   return (
-    <div className={`min-h-screen ${themeStyles.bg} transition-colors duration-700 p-4 md:p-8 flex flex-col items-center ${isZenMode ? 'justify-center overflow-hidden h-screen' : ''}`}>
+    <div className={`min-h-screen ${themeStyles.bg} transition-colors duration-700 p-4 md:p-8 flex flex-col items-center overflow-x-hidden ${isZenMode ? 'justify-center overflow-hidden h-screen' : ''}`}>
       <div className={`w-full max-w-6xl mx-auto flex flex-col items-center transition-all duration-500 ${isZenMode ? 'max-w-4xl' : ''}`}>
         
-        {/* Header - Hides in Zen Mode */}
-        <header className={`w-full mb-10 flex items-center justify-between transition-all duration-500 ${isZenMode ? 'opacity-0 -translate-y-10 pointer-events-none absolute' : 'opacity-100 translate-y-0'}`}>
+        {/* Header - Optimized for mobile width */}
+        <header className={`w-full mb-8 flex items-center justify-between transition-all duration-500 ${isZenMode ? 'opacity-0 -translate-y-10 pointer-events-none absolute' : 'opacity-100 translate-y-0'}`}>
           <div className="flex items-center gap-1 group">
-            <Logo className="h-20 w-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" />
+            <Logo className="h-12 sm:h-20 w-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" />
           </div>
           <div className="flex items-center gap-4">
             <div className={`${themeStyles.surface} border ${themeStyles.border} p-1 rounded-full flex gap-1 shadow-inner`}>
               {['forest', 'sea', 'dark'].map((t) => (
-                <button key={t} onClick={() => setTheme(t as Theme)} className={`w-8 h-8 rounded-full border-2 transition-all ${t === 'forest' ? 'bg-emerald-700' : t === 'sea' ? 'bg-sky-700' : 'bg-slate-800'} ${theme === t ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`} />
+                <button key={t} onClick={() => setTheme(t as Theme)} className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition-all ${t === 'forest' ? 'bg-emerald-700' : t === 'sea' ? 'bg-sky-700' : 'bg-slate-800'} ${theme === t ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100'}`} />
               ))}
             </div>
-            <label className="cursor-pointer group">
-              <div className={`flex items-center gap-2 ${themeStyles.surface} border ${themeStyles.border} px-5 py-2.5 rounded-full text-sm font-bold hover:bg-white/5 transition-all shadow-lg`}>
-                <Upload className={`w-4 h-4 ${themeStyles.accentText}`} /><span className="text-white hidden sm:inline">Upload PDF</span>
-              </div>
-              <input type="file" className="hidden" accept=".pdf,.txt" onChange={handleFileUpload} />
-            </label>
           </div>
         </header>
 
@@ -288,7 +280,6 @@ const App: React.FC = () => {
                 </div>
               )}
               
-              {/* Zen Mode Toggle (Overlay) */}
               <button 
                 onClick={() => setIsZenMode(!isZenMode)}
                 className={`absolute top-4 right-4 z-20 p-2 rounded-lg bg-black/20 hover:bg-black/40 text-slate-400 hover:text-white border border-white/5 transition-all opacity-0 group-hover/reader:opacity-100 ${isZenMode ? 'opacity-100 top-2 right-2' : ''}`}
@@ -299,7 +290,29 @@ const App: React.FC = () => {
 
               <ReaderDisplay token={tokens[currentIndex] || null} fontSize={fontSize} theme={theme} />
               
-              <div className="relative mt-8 px-1 select-none">
+              {/* Central Upload Trigger when empty */}
+              {!text && !isProcessing && (
+                <div className="flex flex-col items-center justify-center mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <label className="cursor-pointer group relative">
+                    <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-pink-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity animate-pulse"></div>
+                    <div className={`${themeStyles.surface} border ${themeStyles.border} px-10 py-6 rounded-2xl flex flex-col items-center gap-4 hover:scale-105 hover:bg-white/5 transition-all relative z-10 shadow-2xl`}>
+                      <div className={`p-4 rounded-full ${themeStyles.accentBg} bg-opacity-20`}>
+                        <Upload className={`w-8 h-8 ${themeStyles.accentText}`} />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-white text-lg font-black uppercase tracking-tighter block">Initiate System</span>
+                        <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Select PDF or Text File</span>
+                      </div>
+                    </div>
+                    <input type="file" className="hidden" accept=".pdf,.txt" onChange={handleFileUpload} />
+                  </label>
+                  <p className="mt-8 text-[9px] text-slate-600 font-bold uppercase tracking-[0.3em] max-w-xs text-center leading-relaxed">
+                    AI-Powered Rapid Serial Visual Presentation Engine
+                  </p>
+                </div>
+              )}
+              
+              <div className={`relative mt-8 px-1 select-none transition-opacity duration-500 ${!text ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                 <div ref={progressBarRef} onMouseDown={handleProgressBarMouseDown} className={`group relative w-full h-3 ${themeStyles.surface} rounded-full cursor-pointer touch-none shadow-inner`}>
                   <div className={`absolute top-0 left-0 h-full ${themeStyles.accentBg} rounded-full transition-all duration-200`} style={{ width: `${progress}%` }} />
                   <div className={`absolute top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full shadow-2xl border-2 ${themeStyles.accentBg.includes('gradient') ? 'border-pink-500' : themeStyles.accentBg.replace('bg-', 'border-')} cursor-grab active:cursor-grabbing transition-transform group-hover:scale-125`} style={{ left: `calc(${progress}% - 10px)` }} />
@@ -312,7 +325,7 @@ const App: React.FC = () => {
               </div>
             </div>
 
-            <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-all duration-500 ${isZenMode ? 'bg-opacity-50 border-opacity-20 translate-y-4' : ''}`}>
+            <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-all duration-500 ${isZenMode ? 'bg-opacity-50 border-opacity-20 translate-y-4' : ''} ${!text ? 'hidden' : ''}`}>
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 blur-3xl rounded-full pointer-events-none" />
               
               <div className="flex items-center justify-between mb-8 relative z-10">
@@ -326,7 +339,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 
-                {/* Minimal Zen Controls for Speed/Size */}
                 {isZenMode && (
                    <div className="flex items-center gap-6">
                       <div className="flex flex-col items-end">
@@ -340,8 +352,8 @@ const App: React.FC = () => {
                 )}
 
                 <div className={`text-right ${isZenMode ? 'hidden' : ''}`}>
-                  <div className="text-5xl font-black text-white leading-none tracking-tighter">{wpm}</div>
-                  <div className="text-[10px] text-slate-500 font-black uppercase mt-2 tracking-[0.3em]">Words Per Minute</div>
+                  <div className="text-3xl sm:text-5xl font-black text-white leading-none tracking-tighter">{wpm}</div>
+                  <div className="text-[8px] sm:text-[10px] text-slate-500 font-black uppercase mt-2 tracking-[0.3em]">Words Per Minute</div>
                 </div>
               </div>
               
@@ -349,25 +361,16 @@ const App: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"><span>Reading Velocity</span><span>{wpm} WPM</span></div>
                   <input type="range" min={MIN_WPM} max={MAX_WPM} step={10} value={wpm} onChange={(e) => setWpm(parseInt(e.target.value))} className="w-full h-2 bg-black/30 rounded-lg appearance-none cursor-pointer" style={{ accentColor: theme === 'dark' ? '#ec4899' : theme === 'forest' ? '#10b981' : '#0ea5e9' }} />
-                  <div className="flex justify-between px-1">
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Zen</span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Turbo</span>
-                  </div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"><span>Visual Scale</span><span>{fontSize}px</span></div>
                   <input type="range" min={12} max={82} step={1} value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value))} className="w-full h-2 bg-black/30 rounded-lg appearance-none cursor-pointer" style={{ accentColor: theme === 'dark' ? '#ec4899' : theme === 'forest' ? '#10b981' : '#0ea5e9' }} />
-                  <div className="flex justify-between px-1">
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Micro</span>
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">Maxi</span>
-                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Sidebar - Hides in Zen Mode */}
-          <div className={`space-y-6 transition-all duration-500 ${isZenMode ? 'hidden' : 'opacity-100 scale-100'}`}>
+          <div className={`space-y-6 transition-all duration-500 ${isZenMode || !text ? 'hidden' : 'opacity-100 scale-100'}`}>
             <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 shadow-2xl h-full flex flex-col transition-all duration-500 overflow-hidden`}>
               <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar pr-2">
                 {docParts.length > 0 && (
@@ -426,7 +429,6 @@ const App: React.FC = () => {
                 <div className={`p-5 ${themeStyles.bg} rounded-2xl border ${themeStyles.border} space-y-4 shadow-inner relative overflow-hidden`}>
                    <div className="absolute top-0 right-0 p-2 opacity-5"><BrainCircuit size={48} /></div>
                   <h3 className="text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3"><BrainCircuit size={16} className={themeStyles.accentText}/>Retention Unit</h3>
-                  <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Cognitive assessment for the current text cycle.</p>
                   <button disabled={!text || isProcessing} onClick={handleGenerateQuiz} className={`w-full ${themeStyles.accentBg} ${themeStyles.button} disabled:opacity-50 transition-all text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95`}>
                     Launch Assessment
                   </button>
@@ -470,8 +472,7 @@ const App: React.FC = () => {
           </div>
         </main>
 
-        {/* Footer Citations - Hide in Zen Mode */}
-        {citations && !isZenMode && (
+        {citations && !isZenMode && text && (
           <section className="w-full mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-3xl overflow-hidden shadow-2xl`}>
               <div className={`flex items-center justify-between p-8 border-b ${themeStyles.border} bg-black/20`}>
@@ -498,16 +499,14 @@ const App: React.FC = () => {
         )}
 
         <footer className={`mt-8 mb-16 flex flex-col items-center gap-6 transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : ''}`}>
-          {/* System Status Line */}
-          <div className="flex items-center justify-center gap-8 text-slate-600 text-[10px] uppercase tracking-[0.4em] font-black opacity-60">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-slate-600 text-[10px] uppercase tracking-[0.4em] font-black opacity-60">
             <p>Sync Verified</p>
-            <div className="w-1.5 h-1.5 bg-slate-800 rounded-full" />
+            <div className="hidden sm:block w-1.5 h-1.5 bg-slate-800 rounded-full" />
             <p>Protocol RSVP v2.5</p>
-            <div className="w-1.5 h-1.5 bg-slate-800 rounded-full" />
+            <div className="hidden sm:block w-1.5 h-1.5 bg-slate-800 rounded-full" />
             <p>Core: Gemini 3 Flash</p>
           </div>
 
-          {/* Author/Contact Branding Line */}
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-slate-500 text-[11px] font-bold tracking-[0.1em] transition-all">
             <div className="flex items-center gap-2 group">
               <User size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
@@ -515,21 +514,13 @@ const App: React.FC = () => {
               <span className="text-slate-300">Tyler Maire</span>
             </div>
             <div className="hidden sm:block w-px h-3 bg-slate-800" />
-            <a 
-              href="mailto:tyler.maire1@gmail.com" 
-              className="flex items-center gap-2 group hover:text-white transition-all"
-            >
+            <a href="mailto:tyler.maire1@gmail.com" className="flex items-center gap-2 group hover:text-white transition-all">
               <Mail size={14} className="opacity-40 group-hover:opacity-100 group-hover:text-blue-400 transition-all" />
               <span className="uppercase text-slate-400">Contact:</span>
-              <span className="underline underline-offset-4 decoration-slate-700 group-hover:decoration-blue-500">tyler.maire1@gmail.com</span>
+              <span className="underline underline-offset-4 decoration-slate-700 group-hover:decoration-blue-500">Email</span>
             </a>
             <div className="hidden sm:block w-px h-3 bg-slate-800" />
-            <a 
-              href="https://github.com/tylermaire/RSVP-Speed-Reader-" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 group hover:text-white transition-all"
-            >
+            <a href="https://github.com/tylermaire/RSVP-Speed-Reader-" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group hover:text-white transition-all">
               <Github size={14} className="opacity-40 group-hover:opacity-100 group-hover:text-purple-400 transition-all" />
               <span className="uppercase text-slate-400">Source:</span>
               <span className="underline underline-offset-4 decoration-slate-700 group-hover:decoration-purple-500">GitHub</span>
@@ -546,10 +537,6 @@ const App: React.FC = () => {
         body { margin: 0; overflow-x: hidden; letter-spacing: -0.01em; }
         input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: white; border-radius: 50%; cursor: pointer; border: 4px solid currentColor; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; }
         input[type='range']::-webkit-slider-thumb:hover { transform: scale(1.15); }
-        
-        @media (max-width: 640px) {
-          input[type='range']::-webkit-slider-thumb { width: 28px; height: 28px; }
-        }
       `}</style>
     </div>
   );
