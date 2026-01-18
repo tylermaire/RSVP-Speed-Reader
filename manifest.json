@@ -1,0 +1,17 @@
+
+{
+  "name": "RSVP Speed Read",
+  "short_name": "RSVP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "description": "High-performance RSVP speed reading app.",
+  "icons": [
+    {
+      "src": "https://rsvpspeedread.com/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

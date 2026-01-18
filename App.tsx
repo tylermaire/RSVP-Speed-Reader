@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Play, Pause, RotateCcw, Upload, Sliders, BrainCircuit, FileText, Bookmark as BookmarkIcon, Trash2, History, CheckCircle2, XCircle, RefreshCw, Palette, Quote, Copy, Check, AlertCircle, Layers, ChevronRight } from 'lucide-react';
+import { Play, Pause, RotateCcw, Upload, Sliders, BrainCircuit, FileText, Bookmark as BookmarkIcon, Trash2, History, CheckCircle2, XCircle, RefreshCw, Palette, Quote, Copy, Check, AlertCircle, Layers, ChevronRight, Maximize2, Minimize2, Settings2 } from 'lucide-react';
 import { Token, Quiz, Bookmark, Theme, Citation, DocumentPart } from './types';
 import { DEFAULT_WPM, MIN_WPM, MAX_WPM, tokenize } from './constants';
 import { analyzeDocumentStructure, extractSegmentText, generateQuiz } from './services/geminiService';
@@ -15,12 +15,9 @@ const Logo: React.FC<{ className?: string }> = ({ className }) => (
         <stop offset="100%" stopColor="#ec4899" />
       </linearGradient>
     </defs>
-    {/* Trailing speed lines */}
     <rect x="10" y="38" width="25" height="3.5" rx="1.75" fill="url(#logo-gradient)" opacity="0.6" />
     <rect x="25" y="46" width="20" height="3.5" rx="1.75" fill="url(#logo-gradient)" opacity="0.8" />
     <rect x="20" y="54" width="28" height="3.5" rx="1.75" fill="url(#logo-gradient)" />
-    
-    {/* Main Stylized V/Arrow Shape */}
     <path d="M55 25L105 45L55 65L68 45L55 25Z" fill="url(#logo-gradient)" />
     <path d="M62 18L115 45L62 72L78 45L62 18Z" fill="url(#logo-gradient)" opacity="0.8" />
     <path d="M72 10L125 45L72 80L90 45L72 10Z" fill="url(#logo-gradient)" opacity="0.6" />
@@ -48,6 +45,7 @@ const App: React.FC = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [isScrubbing, setIsScrubbing] = useState<boolean>(false);
+  const [isZenMode, setIsZenMode] = useState<boolean>(false);
   
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
@@ -238,9 +236,11 @@ const App: React.FC = () => {
   const progress = tokens.length > 0 ? (currentIndex / (tokens.length - 1)) * 100 : 0;
   
   return (
-    <div className={`min-h-screen ${themeStyles.bg} transition-colors duration-700 p-4 md:p-8 flex flex-col items-center`}>
-      <div className="w-full max-w-6xl mx-auto flex flex-col items-center">
-        <header className="w-full mb-10 flex items-center justify-between">
+    <div className={`min-h-screen ${themeStyles.bg} transition-colors duration-700 p-4 md:p-8 flex flex-col items-center ${isZenMode ? 'justify-center overflow-hidden h-screen' : ''}`}>
+      <div className={`w-full max-w-6xl mx-auto flex flex-col items-center transition-all duration-500 ${isZenMode ? 'max-w-4xl' : ''}`}>
+        
+        {/* Header - Hides in Zen Mode */}
+        <header className={`w-full mb-10 flex items-center justify-between transition-all duration-500 ${isZenMode ? 'opacity-0 -translate-y-10 pointer-events-none absolute' : 'opacity-100 translate-y-0'}`}>
           <div className="flex items-center gap-1 group">
             <Logo className="h-14 w-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" />
             <div className="flex flex-col ml-1">
@@ -256,14 +256,14 @@ const App: React.FC = () => {
             </div>
             <label className="cursor-pointer group">
               <div className={`flex items-center gap-2 ${themeStyles.surface} border ${themeStyles.border} px-5 py-2.5 rounded-full text-sm font-bold hover:bg-white/5 transition-all shadow-lg`}>
-                <Upload className={`w-4 h-4 ${themeStyles.accentText}`} /><span className="text-white">Upload PDF</span>
+                <Upload className={`w-4 h-4 ${themeStyles.accentText}`} /><span className="text-white hidden sm:inline">Upload PDF</span>
               </div>
               <input type="file" className="hidden" accept=".pdf,.txt" onChange={handleFileUpload} />
             </label>
           </div>
         </header>
 
-        {error && (
+        {error && !isZenMode && (
           <div className="w-full mb-6 bg-red-500/10 border border-red-500/50 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-4">
             <AlertCircle className="text-red-500 mt-0.5" size={18} />
             <div className="flex-1">
@@ -274,16 +274,27 @@ const App: React.FC = () => {
           </div>
         )}
 
-        <main className="w-full grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
-          <div className="lg:col-span-3 space-y-6">
-            <div className="relative">
+        <main className={`w-full grid grid-cols-1 ${isZenMode ? '' : 'lg:grid-cols-4'} gap-8 mb-12 transition-all duration-500`}>
+          <div className={`${isZenMode ? 'col-span-1' : 'lg:col-span-3'} space-y-6`}>
+            <div className="relative group/reader">
               {isProcessing && (
                 <div className="absolute inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center rounded-xl border border-white/10">
                   <div className={`w-14 h-14 border-4 ${themeStyles.accent === 'indigo' ? 'border-blue-500' : themeStyles.accent === 'emerald' ? 'border-emerald-500' : 'border-sky-500'} border-t-transparent rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(59,130,246,0.5)]`} />
                   <p className={`${themeStyles.accentText} font-bold tracking-widest text-xs uppercase animate-pulse`}>Optimizing Text Flow...</p>
                 </div>
               )}
+              
+              {/* Zen Mode Toggle (Overlay) */}
+              <button 
+                onClick={() => setIsZenMode(!isZenMode)}
+                className={`absolute top-4 right-4 z-20 p-2 rounded-lg bg-black/20 hover:bg-black/40 text-slate-400 hover:text-white border border-white/5 transition-all opacity-0 group-hover/reader:opacity-100 ${isZenMode ? 'opacity-100 top-2 right-2' : ''}`}
+                title={isZenMode ? "Exit Zen Mode" : "Zen Mode"}
+              >
+                {isZenMode ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+              </button>
+
               <ReaderDisplay token={tokens[currentIndex] || null} fontSize={fontSize} theme={theme} />
+              
               <div className="relative mt-8 px-1 select-none">
                 <div ref={progressBarRef} onMouseDown={handleProgressBarMouseDown} className={`group relative w-full h-3 ${themeStyles.surface} rounded-full cursor-pointer touch-none shadow-inner`}>
                   <div className={`absolute top-0 left-0 h-full ${themeStyles.accentBg} rounded-full transition-all duration-200`} style={{ width: `${progress}%` }} />
@@ -291,33 +302,46 @@ const App: React.FC = () => {
                 </div>
                 <div className="flex justify-between mt-4 text-[11px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
                   <span className={`${themeStyles.surface} px-2 py-1 rounded border ${themeStyles.border} shadow-sm`}>{Math.round(progress)}% Progress</span>
-                  <span>{activePartId ? `Segment ${activePartId} ` : ''}• Word {currentIndex} of {tokens.length}</span>
+                  <span className={`${isZenMode ? 'hidden sm:inline' : ''}`}>{activePartId ? `Segment ${activePartId} ` : ''}• Word {currentIndex} of {tokens.length}</span>
                   <button onClick={resetReader} className="hover:text-white transition-colors">Restart Cycle</button>
                 </div>
               </div>
             </div>
 
-            <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-8 shadow-2xl relative overflow-hidden`}>
-              {/* Subtle background decoration */}
+            <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden transition-all duration-500 ${isZenMode ? 'bg-opacity-50 border-opacity-20 translate-y-4' : ''}`}>
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 blur-3xl rounded-full pointer-events-none" />
               
-              <div className="flex items-center justify-between mb-10 relative z-10">
+              <div className="flex items-center justify-between mb-8 relative z-10">
                 <div className="flex items-center gap-5">
-                  <button onClick={togglePlay} className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-amber-500' : themeStyles.accentBg} text-white shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:scale-110 active:scale-95 group`}>
+                  <button onClick={togglePlay} className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-amber-500' : themeStyles.accentBg} text-white shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:scale-110 active:scale-95 group`}>
                     {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
                   </button>
-                  <div className="flex flex-col gap-2">
+                  <div className={`flex flex-col gap-2 ${isZenMode ? 'hidden sm:flex' : ''}`}>
                     <button onClick={resetReader} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${themeStyles.border} text-slate-400 hover:text-white hover:border-slate-500 transition-all text-[10px] font-bold uppercase tracking-wider`}><RotateCcw size={14} /> Reset</button>
                     <button onClick={handleSaveBookmark} disabled={!text} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${themeStyles.border} text-slate-400 hover:text-white hover:border-slate-500 transition-all text-[10px] font-bold uppercase tracking-wider disabled:opacity-20`}><BookmarkIcon size={14} /> Bookmark</button>
                   </div>
                 </div>
-                <div className="text-right">
+                
+                {/* Minimal Zen Controls for Speed/Size */}
+                {isZenMode && (
+                   <div className="flex items-center gap-6">
+                      <div className="flex flex-col items-end">
+                         <span className="text-2xl font-black text-white">{wpm}</span>
+                         <span className="text-[8px] text-slate-500 uppercase tracking-widest font-bold">WPM</span>
+                      </div>
+                      <button onClick={() => setIsZenMode(false)} className="p-3 bg-white/5 rounded-xl text-slate-400 hover:text-white border border-white/5">
+                        <Settings2 size={20} />
+                      </button>
+                   </div>
+                )}
+
+                <div className={`text-right ${isZenMode ? 'hidden' : ''}`}>
                   <div className="text-5xl font-black text-white leading-none tracking-tighter">{wpm}</div>
                   <div className="text-[10px] text-slate-500 font-black uppercase mt-2 tracking-[0.3em]">Words Per Minute</div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10">
+              <div className={`grid grid-cols-1 md:grid-cols-2 gap-10 relative z-10 transition-all duration-500 ${isZenMode ? 'opacity-30 hover:opacity-100' : 'opacity-100'}`}>
                 <div className="space-y-4">
                   <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"><span>Reading Velocity</span><span>{wpm} WPM</span></div>
                   <input type="range" min={MIN_WPM} max={MAX_WPM} step={10} value={wpm} onChange={(e) => setWpm(parseInt(e.target.value))} className="w-full h-2 bg-black/30 rounded-lg appearance-none cursor-pointer" style={{ accentColor: theme === 'dark' ? '#ec4899' : theme === 'forest' ? '#10b981' : '#0ea5e9' }} />
@@ -338,7 +362,8 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-6">
+          {/* Sidebar - Hides in Zen Mode */}
+          <div className={`space-y-6 transition-all duration-500 ${isZenMode ? 'hidden' : 'opacity-100 scale-100'}`}>
             <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 shadow-2xl h-full flex flex-col transition-all duration-500 overflow-hidden`}>
               <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar pr-2">
                 {docParts.length > 0 && (
@@ -441,7 +466,8 @@ const App: React.FC = () => {
           </div>
         </main>
 
-        {citations && (
+        {/* Footer Citations - Hide in Zen Mode */}
+        {citations && !isZenMode && (
           <section className="w-full mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-3xl overflow-hidden shadow-2xl`}>
               <div className={`flex items-center justify-between p-8 border-b ${themeStyles.border} bg-black/20`}>
@@ -467,7 +493,7 @@ const App: React.FC = () => {
           </section>
         )}
 
-        <footer className="mt-8 mb-12 text-center text-slate-600 text-[10px] uppercase tracking-[0.4em] font-black shrink-0 flex items-center justify-center gap-8 opacity-60">
+        <footer className={`mt-8 mb-12 text-center text-slate-600 text-[10px] uppercase tracking-[0.4em] font-black shrink-0 flex items-center justify-center gap-8 opacity-60 transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : ''}`}>
           <p>Sync Verified</p>
           <div className="w-1.5 h-1.5 bg-slate-800 rounded-full" />
           <p>Protocol RSVP v2.5</p>
@@ -484,6 +510,10 @@ const App: React.FC = () => {
         body { margin: 0; overflow-x: hidden; letter-spacing: -0.01em; }
         input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: white; border-radius: 50%; cursor: pointer; border: 4px solid currentColor; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; }
         input[type='range']::-webkit-slider-thumb:hover { transform: scale(1.15); }
+        
+        @media (max-width: 640px) {
+          input[type='range']::-webkit-slider-thumb { width: 28px; height: 28px; }
+        }
       `}</style>
     </div>
   );

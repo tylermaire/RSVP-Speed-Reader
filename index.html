@@ -3,9 +3,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>RSVP Speed Read | Turbocharge Your Focus</title>
     <meta name="description" content="Master long documents in minutes with high-performance RSVP speed reading and AI-powered comprehension tools. Optimized for rsvpspeedread.com.">
+    
+    <!-- PWA / Mobile Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#020617">
+    <link rel="manifest" href="/manifest.json">
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://rsvpspeedread.com" />
@@ -26,15 +32,23 @@
             background-color: #020617;
             color: #f8fafc;
             margin: 0;
+            overscroll-behavior-y: contain; /* Prevents "pull to refresh" on mobile */
+            overflow-x: hidden;
         }
         .mono {
             font-family: 'JetBrains Mono', monospace;
         }
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #020617; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        
+        /* Mobile tap highlight removal */
+        * { -webkit-tap-highlight-color: transparent; }
+
+        /* Ensure smooth transitions */
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
     </style>
 <script type="importmap">
 {
@@ -52,7 +66,7 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Standard Vite entry point -->
+    <!-- Vite handles all module resolution -->
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>
