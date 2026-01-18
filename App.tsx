@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Play, Pause, RotateCcw, Upload, Sliders, BrainCircuit, FileText, Bookmark as BookmarkIcon, Trash2, History, CheckCircle2, XCircle, RefreshCw, Palette, Quote, Copy, Check, AlertCircle, Layers, ChevronRight, Maximize2, Minimize2, Settings2, Mail, User, Github } from 'lucide-react';
+import { Play, Pause, RotateCcw, Upload, Sliders, BrainCircuit, FileText, Bookmark as BookmarkIcon, Trash2, History, CheckCircle2, XCircle, RefreshCw, Palette, Quote, Copy, Check, AlertCircle, Layers, ChevronRight, Maximize2, Minimize2, Settings2, Mail, User, Github, Linkedin, ExternalLink } from 'lucide-react';
 import { Token, Quiz, Bookmark, Theme, Citation, DocumentPart } from './types';
 import { DEFAULT_WPM, MIN_WPM, MAX_WPM, tokenize } from './constants';
 import { analyzeDocumentStructure, extractSegmentText, generateQuiz } from './services/geminiService';
@@ -245,7 +245,7 @@ const App: React.FC = () => {
     <div className={`min-h-screen ${themeStyles.bg} transition-colors duration-700 p-4 md:p-8 flex flex-col items-center overflow-x-hidden ${isZenMode ? 'justify-center overflow-hidden h-screen' : ''}`}>
       <div className={`w-full max-w-6xl mx-auto flex flex-col items-center transition-all duration-500 ${isZenMode ? 'max-w-4xl' : ''}`}>
         
-        {/* Header - Optimized for mobile width */}
+        {/* Header */}
         <header className={`w-full mb-8 flex items-center justify-between transition-all duration-500 ${isZenMode ? 'opacity-0 -translate-y-10 pointer-events-none absolute' : 'opacity-100 translate-y-0'}`}>
           <div className="flex items-center gap-1 group">
             <Logo className="h-12 sm:h-20 w-auto drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" />
@@ -290,7 +290,6 @@ const App: React.FC = () => {
 
               <ReaderDisplay token={tokens[currentIndex] || null} fontSize={fontSize} theme={theme} />
               
-              {/* Central Upload Trigger when empty */}
               {!text && !isProcessing && (
                 <div className="flex flex-col items-center justify-center mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <label className="cursor-pointer group relative">
@@ -306,9 +305,6 @@ const App: React.FC = () => {
                     </div>
                     <input type="file" className="hidden" accept=".pdf,.txt" onChange={handleFileUpload} />
                   </label>
-                  <p className="mt-8 text-[9px] text-slate-600 font-bold uppercase tracking-[0.3em] max-w-xs text-center leading-relaxed">
-                    AI-Powered Rapid Serial Visual Presentation Engine
-                  </p>
                 </div>
               )}
               
@@ -370,108 +366,74 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className={`space-y-6 transition-all duration-500 ${isZenMode || !text ? 'hidden' : 'opacity-100 scale-100'}`}>
-            <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 shadow-2xl h-full flex flex-col transition-all duration-500 overflow-hidden`}>
-              <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar pr-2">
-                {docParts.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-xs font-black text-white uppercase tracking-[0.2em]">
-                      <Layers size={16} className={themeStyles.accentText} />
-                      <span>Segments</span>
-                    </div>
-                    <div className="space-y-2">
-                      {docParts.map((p) => (
-                        <button 
-                          key={p.id} 
-                          onClick={() => loadPart(p)}
-                          disabled={isProcessing}
-                          className={`w-full text-left p-4 rounded-xl border text-[11px] transition-all flex items-center justify-between group relative overflow-hidden ${
-                            activePartId === p.id 
-                            ? `text-white shadow-xl scale-[1.02] border-transparent z-10` 
-                            : `${themeStyles.bg} border-${themeStyles.border} text-slate-400 hover:border-slate-600`
-                          }`}
-                        >
-                          {activePartId === p.id && (
-                            <div className={`absolute inset-0 ${themeStyles.accentBg} -z-10`} />
-                          )}
-                          <div className="flex flex-col gap-1 overflow-hidden">
-                            <span className="font-black uppercase tracking-wider truncate">Part {p.id}: {p.title}</span>
-                            <span className={`text-[9px] opacity-70 truncate font-medium`}>{p.description}</span>
-                          </div>
-                          <ChevronRight size={16} className={`shrink-0 opacity-0 group-hover:opacity-100 transition-opacity`} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-4 border-t border-white/5 pt-6">
-                  <div className="flex items-center justify-between text-xs font-black text-white uppercase tracking-[0.2em]">
-                    <div className="flex items-center gap-3"><History size={16} className={themeStyles.accentText} /><span>History</span></div>
-                  </div>
-                  {bookmarks.length === 0 ? (
-                    <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest py-8 text-center border border-dashed border-white/10 rounded-2xl bg-black/10">Empty Log</div>
-                  ) : (
-                    <div className="space-y-2">
-                      {bookmarks.map(b => (
-                        <div key={b.id} onClick={() => loadBookmark(b)} className={`group flex items-center justify-between ${themeStyles.bg} border ${themeStyles.border} p-3 rounded-xl transition-all cursor-pointer hover:bg-white/5 hover:border-slate-600`}>
-                          <div className="flex flex-col gap-1 overflow-hidden">
-                            <span className="text-[10px] font-black text-slate-200 uppercase tracking-wide truncate">{b.label}</span>
-                            <span className="text-[9px] text-slate-500 font-bold">{b.percentage}% Progress</span>
-                          </div>
-                          <button onClick={(e) => deleteBookmark(b.id, e)} className="p-2 text-slate-700 hover:text-red-500 rounded-lg transition-all"><Trash2 size={14} /></button>
-                        </div>
-                      ))}
+          {!isZenMode && text && (
+            <div className={`space-y-6 transition-all duration-500`}>
+              <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-2xl p-6 shadow-2xl h-full flex flex-col overflow-hidden`}>
+                <div className="flex-1 space-y-8 overflow-y-auto custom-scrollbar pr-2">
+                  {docParts.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 text-xs font-black text-white uppercase tracking-[0.2em]">
+                        <Layers size={16} className={themeStyles.accentText} />
+                        <span>Segments</span>
+                      </div>
+                      <div className="space-y-2">
+                        {docParts.map((p) => (
+                          <button 
+                            key={p.id} 
+                            onClick={() => loadPart(p)}
+                            disabled={isProcessing}
+                            className={`w-full text-left p-4 rounded-xl border text-[11px] transition-all flex items-center justify-between group relative overflow-hidden ${
+                              activePartId === p.id 
+                              ? `text-white shadow-xl scale-[1.02] border-transparent z-10` 
+                              : `${themeStyles.bg} border-${themeStyles.border} text-slate-400 hover:border-slate-600`
+                            }`}
+                          >
+                            {activePartId === p.id && <div className={`absolute inset-0 ${themeStyles.accentBg} -z-10`} />}
+                            <div className="flex flex-col gap-1 overflow-hidden">
+                              <span className="font-black uppercase tracking-wider truncate">Part {p.id}: {p.title}</span>
+                              <span className={`text-[9px] opacity-70 truncate font-medium`}>{p.description}</span>
+                            </div>
+                            <ChevronRight size={16} className={`shrink-0 opacity-0 group-hover:opacity-100 transition-opacity`} />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
-                </div>
 
-                <div className={`p-5 ${themeStyles.bg} rounded-2xl border ${themeStyles.border} space-y-4 shadow-inner relative overflow-hidden`}>
-                   <div className="absolute top-0 right-0 p-2 opacity-5"><BrainCircuit size={48} /></div>
-                  <h3 className="text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3"><BrainCircuit size={16} className={themeStyles.accentText}/>Retention Unit</h3>
-                  <button disabled={!text || isProcessing} onClick={handleGenerateQuiz} className={`w-full ${themeStyles.accentBg} ${themeStyles.button} disabled:opacity-50 transition-all text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95`}>
-                    Launch Assessment
-                  </button>
-                </div>
-
-                {quiz && showQuiz && (
-                  <div className={`mt-4 space-y-6 animate-in fade-in zoom-in-95 duration-500 ${themeStyles.bg} p-6 rounded-2xl border ${themeStyles.border} shadow-2xl`}>
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-white text-[10px] font-black uppercase tracking-[0.2em]">Checkpoints</h4>
-                      <button onClick={() => setShowQuiz(false)} className="text-slate-500 hover:text-white text-[9px] font-black uppercase tracking-widest border border-slate-800 px-2 py-1 rounded">End</button>
+                  <div className="space-y-4 border-t border-white/5 pt-6">
+                    <div className="flex items-center justify-between text-xs font-black text-white uppercase tracking-[0.2em]">
+                      <div className="flex items-center gap-3"><History size={16} className={themeStyles.accentText} /><span>History</span></div>
                     </div>
-                    <div className="space-y-8">
-                      {quiz.questions.map((q, qIdx) => {
-                        const selected = selectedAnswers[qIdx];
-                        return (
-                          <div key={qIdx} className="space-y-3">
-                            <p className="text-[11px] font-bold text-slate-100 leading-normal">#{qIdx + 1} {q.question}</p>
-                            <div className="grid grid-cols-1 gap-2">
-                              {q.options.map((opt, oIdx) => {
-                                let variantClass = `${themeStyles.surface} border ${themeStyles.border} text-slate-400 hover:border-slate-500`;
-                                if (selected) {
-                                  if (opt === q.answer) variantClass = "bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
-                                  else if (selected === opt) variantClass = "bg-red-500/10 border-red-500/50 text-red-400";
-                                  else variantClass = "opacity-40 border-transparent text-slate-600";
-                                }
-                                return (
-                                  <button key={oIdx} onClick={() => handleAnswerSelect(qIdx, opt)} disabled={!!selected} className={`text-left text-[10px] px-4 py-3 rounded-xl border font-medium transition-all ${variantClass}`}>
-                                    {opt}
-                                  </button>
-                                );
-                              })}
+                    {bookmarks.length === 0 ? (
+                      <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest py-8 text-center border border-dashed border-white/10 rounded-2xl bg-black/10">Empty Log</div>
+                    ) : (
+                      <div className="space-y-2">
+                        {bookmarks.map(b => (
+                          <div key={b.id} onClick={() => loadBookmark(b)} className={`group flex items-center justify-between ${themeStyles.bg} border ${themeStyles.border} p-3 rounded-xl transition-all cursor-pointer hover:bg-white/5 hover:border-slate-600`}>
+                            <div className="flex flex-col gap-1 overflow-hidden">
+                              <span className="text-[10px] font-black text-slate-200 uppercase tracking-wide truncate">{b.label}</span>
+                              <span className="text-[9px] text-slate-500 font-bold">{b.percentage}% Progress</span>
                             </div>
+                            <button onClick={(e) => deleteBookmark(b.id, e)} className="p-2 text-slate-700 hover:text-red-500 rounded-lg transition-all"><Trash2 size={14} /></button>
                           </div>
-                        );
-                      })}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  <div className={`p-5 ${themeStyles.bg} rounded-2xl border ${themeStyles.border} space-y-4 shadow-inner relative overflow-hidden`}>
+                    <h3 className="text-white text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-3"><BrainCircuit size={16} className={themeStyles.accentText}/>Retention Unit</h3>
+                    <button disabled={!text || isProcessing} onClick={handleGenerateQuiz} className={`w-full ${themeStyles.accentBg} ${themeStyles.button} disabled:opacity-50 transition-all text-white py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] shadow-xl active:scale-95`}>
+                      Launch Assessment
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </main>
 
+        {/* Citations Section */}
         {citations && !isZenMode && text && (
           <section className="w-full mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <div className={`${themeStyles.surface} border ${themeStyles.border} rounded-3xl overflow-hidden shadow-2xl`}>
@@ -482,15 +444,15 @@ const App: React.FC = () => {
                 </div>
               </div>
               <div className="p-8 grid grid-cols-1 md:grid-cols-3 gap-8">
-                {['apa7', 'mla9', 'chicago'].map((style) => (
+                {(['apa7', 'mla9', 'chicago'] as const).map((style) => (
                   <div key={style} className={`space-y-4 p-6 ${themeStyles.bg} rounded-2xl border ${themeStyles.border} transition-all hover:border-slate-600 group relative shadow-inner`}>
                     <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${themeStyles.accentText}`}>{style} Edition</span>
-                      <button onClick={() => handleCopyCitation((citations as any)?.[style] || '', style)} className="p-2 hover:bg-white/10 rounded-xl transition-all opacity-0 group-hover:opacity-100">
-                        {copiedId === style ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} className="text-slate-500" />}
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{style}</span>
+                      <button onClick={() => handleCopyCitation(citations[style], style)} className="text-slate-500 hover:text-white transition-all">
+                        {copiedId === style ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
                       </button>
                     </div>
-                    <div className="min-h-[80px]"><p className="text-[11px] text-slate-300 leading-relaxed italic font-medium">{(citations as any)[style]}</p></div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed italic">{citations[style]}</p>
                   </div>
                 ))}
               </div>
@@ -498,46 +460,97 @@ const App: React.FC = () => {
           </section>
         )}
 
-        <footer className={`mt-8 mb-16 flex flex-col items-center gap-6 transition-all duration-500 ${isZenMode ? 'opacity-0 pointer-events-none' : ''}`}>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-slate-600 text-[10px] uppercase tracking-[0.4em] font-black opacity-60">
-            <p>Sync Verified</p>
-            <div className="hidden sm:block w-1.5 h-1.5 bg-slate-800 rounded-full" />
-            <p>Protocol RSVP v2.5</p>
-            <div className="hidden sm:block w-1.5 h-1.5 bg-slate-800 rounded-full" />
-            <p>Core: Gemini 3 Flash</p>
-          </div>
+        {/* Assessment (Quiz) Modal Overlay */}
+        {quiz && showQuiz && (
+          <div className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md overflow-y-auto py-12 px-4 flex justify-center items-start animate-in fade-in duration-300">
+             <div className={`${themeStyles.surface} border ${themeStyles.border} w-full max-w-2xl rounded-3xl p-8 sm:p-12 shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-500`}>
+                <div className="flex items-center justify-between mb-12">
+                   <div>
+                      <h2 className="text-white text-2xl font-black tracking-tighter uppercase">Assessment</h2>
+                      <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-1">{quiz.title}</p>
+                   </div>
+                   <button onClick={() => setShowQuiz(false)} className="p-3 bg-white/5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all"><XCircle size={28} /></button>
+                </div>
+                
+                <div className="space-y-12">
+                  {quiz.questions.map((q, qIdx) => {
+                    const selected = selectedAnswers[qIdx];
+                    return (
+                      <div key={qIdx} className="space-y-6">
+                        <div className="flex items-start gap-4">
+                          <span className={`${themeStyles.accentText} font-black text-lg opacity-40`}>0{qIdx + 1}</span>
+                          <p className="text-lg font-bold text-slate-100 leading-tight">{q.question}</p>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 pl-10">
+                          {q.options.map((opt, oIdx) => {
+                            let variantClass = `${themeStyles.bg} border ${themeStyles.border} text-slate-400 hover:border-slate-500 hover:bg-white/5`;
+                            if (selected) {
+                              if (opt === q.answer) variantClass = "bg-emerald-500/10 border-emerald-500/50 text-emerald-400";
+                              else if (selected === opt) variantClass = "bg-red-500/10 border-red-500/50 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.1)]";
+                              else variantClass = "opacity-30 border-transparent text-slate-600";
+                            }
+                            return (
+                              <button key={oIdx} onClick={() => handleAnswerSelect(qIdx, opt)} disabled={!!selected} className={`text-left text-sm px-6 py-4 rounded-2xl border font-medium transition-all group relative overflow-hidden ${variantClass}`}>
+                                {selected && opt === q.answer && <CheckCircle2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2" />}
+                                {selected && selected === opt && opt !== q.answer && <XCircle size={16} className="absolute right-4 top-1/2 -translate-y-1/2" />}
+                                {opt}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-slate-500 text-[11px] font-bold tracking-[0.1em] transition-all">
-            <div className="flex items-center gap-2 group">
-              <User size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
-              <span className="uppercase text-slate-400">Author:</span>
-              <span className="text-slate-300">Tyler Maire</span>
+                <div className="mt-16 pt-12 border-t border-white/5 flex flex-col items-center gap-6">
+                   <div className="flex gap-2">
+                      {Object.keys(selectedAnswers).length === quiz.questions.length && (
+                         <div className="text-center">
+                            <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest block mb-1">Score Card</span>
+                            <span className="text-4xl font-black text-white">
+                               {quiz.questions.filter((q, idx) => selectedAnswers[idx] === q.answer).length} / {quiz.questions.length}
+                            </span>
+                         </div>
+                      )}
+                   </div>
+                   <button onClick={() => setShowQuiz(false)} className={`px-12 py-4 rounded-2xl ${themeStyles.accentBg} text-white font-black uppercase tracking-widest text-xs shadow-2xl hover:scale-105 active:scale-95 transition-all`}>Complete Assessment</button>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className={`w-full mt-24 pb-12 transition-all duration-700 ${isZenMode ? 'opacity-0 translate-y-10' : 'opacity-100 translate-y-0'}`}>
+          <div className={`pt-12 border-t ${themeStyles.border} flex flex-col md:flex-row items-center justify-between gap-8`}>
+            <div className="flex flex-col items-center md:items-start gap-4">
+              <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all cursor-default">
+                <Logo className="h-8 w-auto" />
+              </div>
+              <p className="text-[10px] text-slate-600 font-bold uppercase tracking-[0.3em] text-center md:text-left">
+                Empowering Human Cognitive Bandwidth • © 2024
+              </p>
             </div>
-            <div className="hidden sm:block w-px h-3 bg-slate-800" />
-            <a href="mailto:tyler.maire1@gmail.com" className="flex items-center gap-2 group hover:text-white transition-all">
-              <Mail size={14} className="opacity-40 group-hover:opacity-100 group-hover:text-blue-400 transition-all" />
-              <span className="uppercase text-slate-400">Contact:</span>
-              <span className="underline underline-offset-4 decoration-slate-700 group-hover:decoration-blue-500">Email</span>
-            </a>
-            <div className="hidden sm:block w-px h-3 bg-slate-800" />
-            <a href="https://github.com/tylermaire/RSVP-Speed-Reader-" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group hover:text-white transition-all">
-              <Github size={14} className="opacity-40 group-hover:opacity-100 group-hover:text-purple-400 transition-all" />
-              <span className="uppercase text-slate-400">Source:</span>
-              <span className="underline underline-offset-4 decoration-slate-700 group-hover:decoration-purple-500">GitHub</span>
-            </a>
+            
+            <div className="flex flex-wrap justify-center items-center gap-6">
+              <a href="https://linkedin.com/in/tylermaire" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors group">
+                <Linkedin size={18} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Connect</span>
+                <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-all -translate-y-1" />
+              </a>
+              <a href="https://github.com/tylermaire/RSVP-Speed-Reader-" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors group">
+                <Github size={18} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Source</span>
+                <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-all -translate-y-1" />
+              </a>
+              <a href="mailto:tyler.maire1@gmail.com" className="flex items-center gap-2 text-slate-500 hover:text-white transition-colors">
+                <Mail size={18} />
+                <span className="text-[10px] font-black uppercase tracking-widest">Support</span>
+              </a>
+            </div>
           </div>
         </footer>
       </div>
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 20px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
-        body { margin: 0; overflow-x: hidden; letter-spacing: -0.01em; }
-        input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: white; border-radius: 50%; cursor: pointer; border: 4px solid currentColor; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: transform 0.2s; }
-        input[type='range']::-webkit-slider-thumb:hover { transform: scale(1.15); }
-      `}</style>
     </div>
   );
 };
