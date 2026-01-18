@@ -1,13 +1,13 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Quiz, Citation, DocumentPart } from "../types";
+import { Quiz, Citation, DocumentPart, DocumentAnalysis } from "../types";
 
 const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Identifies logical parts of a document to handle output limits
  */
-export const analyzeDocumentStructure = async (base64Data: string): Promise<{ parts: DocumentPart[], citations: Citation }> => {
+export const analyzeDocumentStructure = async (base64Data: string): Promise<DocumentAnalysis> => {
   const ai = getAI();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
@@ -19,7 +19,7 @@ export const analyzeDocumentStructure = async (base64Data: string): Promise<{ pa
             data: base64Data,
           },
         },
-        { text: "Analyze this document. 1: Provide academic citations (APA7, MLA9, Chicago). 2: Divide the entire document into 5-10 logical parts/segments for reading (e.g., 'Part 1: Pages 1-15', 'Part 2: Chapter 1'). Return as JSON." },
+        { text: "Analyze this document. 1: Provide academic citations (APA7, MLA9, Chicago). 2: Determine the total number of pages in the document. 3: Divide the entire document into 5-10 logical parts/segments for reading. For each part, provide the starting page number and ending page number. Return as JSON." },
       ],
     },
     config: {
@@ -27,6 +27,7 @@ export const analyzeDocumentStructure = async (base64Data: string): Promise<{ pa
       responseSchema: {
         type: Type.OBJECT,
         properties: {
+          totalPages: { type: Type.NUMBER },
           citations: {
             type: Type.OBJECT,
             properties: {
@@ -43,13 +44,15 @@ export const analyzeDocumentStructure = async (base64Data: string): Promise<{ pa
               properties: {
                 id: { type: Type.NUMBER },
                 title: { type: Type.STRING },
-                description: { type: Type.STRING }
+                description: { type: Type.STRING },
+                startPage: { type: Type.NUMBER },
+                endPage: { type: Type.NUMBER }
               },
-              required: ["id", "title", "description"]
+              required: ["id", "title", "description", "startPage", "endPage"]
             }
           }
         },
-        required: ["citations", "parts"]
+        required: ["citations", "parts", "totalPages"]
       }
     }
   });

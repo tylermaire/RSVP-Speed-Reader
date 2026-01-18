@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Play, Pause, RotateCcw, Upload, Sliders, BrainCircuit, FileText, Bookmark as BookmarkIcon, Trash2, History, CheckCircle2, XCircle, RefreshCw, Palette, Quote, Copy, Check, AlertCircle, Layers, ChevronRight, Maximize2, Minimize2, Settings2, Mail, User, Github, Linkedin, ExternalLink } from 'lucide-react';
-import { Token, Quiz, Bookmark, Theme, Citation, DocumentPart } from './types';
+import { Token, Quiz, Bookmark, Theme, Citation, DocumentPart, DocumentAnalysis } from './types';
 import { DEFAULT_WPM, MIN_WPM, MAX_WPM, tokenize } from './constants';
 import { analyzeDocumentStructure, extractSegmentText, generateQuiz } from './services/geminiService';
 import ReaderDisplay from './components/ReaderDisplay';
@@ -46,6 +46,7 @@ const App: React.FC = () => {
   const [showQuiz, setShowQuiz] = useState<boolean>(false);
   const [citations, setCitations] = useState<Citation | null>(null);
   const [docParts, setDocParts] = useState<DocumentPart[]>([]);
+  const [totalPages, setTotalPages] = useState<number>(0);
   const [activePartId, setActivePartId] = useState<number | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
@@ -101,6 +102,7 @@ const App: React.FC = () => {
     setDocParts([]);
     setCitations(null);
     setFileName(file.name);
+    setTotalPages(0);
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -109,10 +111,11 @@ const App: React.FC = () => {
         setFileBase64(base64);
         
         if (file.type === 'application/pdf') {
-          const { parts, citations } = await analyzeDocumentStructure(base64);
-          setDocParts(parts);
-          setCitations(citations);
-          if (parts.length > 0) loadPart(parts[0], base64);
+          const analysis = await analyzeDocumentStructure(base64);
+          setDocParts(analysis.parts);
+          setCitations(analysis.citations);
+          setTotalPages(analysis.totalPages);
+          if (analysis.parts.length > 0) loadPart(analysis.parts[0], base64);
         } else {
           const content = atob(base64);
           setText(content);
@@ -240,6 +243,18 @@ const App: React.FC = () => {
   }, [isScrubbing, tokens.length]);
 
   const progress = tokens.length > 0 ? (currentIndex / (tokens.length - 1)) * 100 : 0;
+
+  // Calculate the estimated current page based on word progress within the segment
+  const currentPageDisplay = useMemo(() => {
+    if (!activePartId || docParts.length === 0 || tokens.length === 0) return null;
+    const part = docParts.find(p => p.id === activePartId);
+    if (!part) return null;
+    
+    const wordProgress = currentIndex / Math.max(1, tokens.length - 1);
+    const pageRange = part.endPage - part.startPage;
+    const estPage = part.startPage + Math.floor(wordProgress * (pageRange + 1));
+    return Math.min(estPage, part.endPage);
+  }, [activePartId, docParts, currentIndex, tokens.length]);
   
   return (
     <div className={`min-h-screen ${themeStyles.bg} transition-colors duration-700 p-4 md:p-8 flex flex-col items-center overflow-x-hidden ${isZenMode ? 'justify-center overflow-hidden h-screen' : ''}`}>
@@ -315,7 +330,11 @@ const App: React.FC = () => {
                 </div>
                 <div className="flex justify-between mt-4 text-[11px] text-slate-500 font-mono uppercase tracking-[0.2em] font-black">
                   <span className={`${themeStyles.surface} px-2 py-1 rounded border ${themeStyles.border} shadow-sm`}>{Math.round(progress)}% Progress</span>
-                  <span className={`${isZenMode ? 'hidden sm:inline' : ''}`}>{activePartId ? `Segment ${activePartId} ` : ''}• Word {currentIndex} of {tokens.length}</span>
+                  <span className={`${isZenMode ? 'hidden sm:inline' : ''}`}>
+                    {activePartId ? `Segment ${activePartId} • ` : ''}
+                    Word {currentIndex} of {tokens.length}
+                    {currentPageDisplay && totalPages > 0 && ` • Page ${currentPageDisplay} of ${totalPages}`}
+                  </span>
                   <button onClick={resetReader} className="hover:text-white transition-colors">Restart Cycle</button>
                 </div>
               </div>

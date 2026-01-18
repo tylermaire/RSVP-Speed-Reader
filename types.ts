@@ -45,4 +45,12 @@ export interface DocumentPart {
   id: number;
   title: string;
   description: string;
+  startPage: number;
+  endPage: number;
+}
+
+export interface DocumentAnalysis {
+  parts: DocumentPart[];
+  citations: Citation;
+  totalPages: number;
 }
